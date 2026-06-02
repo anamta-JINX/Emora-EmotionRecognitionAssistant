@@ -1,21 +1,8 @@
-# =========================
-# DATASETS ONLY (ignored)
-# =========================
-Datasets/
-datasets/
-dataset/
-data/
-raw_data/
-Facial Expressions/
-feedback_data/
-
-# If you have a local-only preprocessed dataset cache, ignore it too:
-preprocessed/
 
 # =========================
 # Generated outputs (ignored)
 # =========================
-evaluation_outputs/
+
 outputs/
 results/
 runs/
