@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/ico" href="{{ url_for('static', filename='imgs/Elogo.ico') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-left">
+        <div class="logo-wrapper">
+            <img src="{{ url_for('static', filename='imgs/EmoralogoW.ico') }}"
+                 alt="Emora Logo"
+                 class="nav-logo">
+        </div>
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/#about">About</a></li>
+        <li><a href="/#demo">Demo</a></li>
+        <li><a href="/#technology">Technology</a></li>
+        <li><a href="/#contact">Contact</a></li>
+        <li><a href="/profile">Profile</a></li>
+    </ul>
+</nav>
+
+<section class="demo-pro">
+    <div class="demo-header">
+        <h2>Profile</h2>
+        <p>Login to continue your EMORA experience.</p>
+    </div>
+
+    <div class="demo-grid">
+        <div class="demo-card demo-card-wide">
+            <div class="demo-card-head">
+                <h3>Login</h3>
+                <span class="pill">Secure Access</span>
+            </div>
+
+            <p class="tech-intro">
+                <img src="{{ url_for('static', filename='imgs/Elogo.ico') }}" alt="EMORA Logo" width="80">
+            </p>
+
+            <p>
+                Enter your username or email and password to sign in.<br>
+                If you do not have an account yet, use the Sign Up option below.
+            </p>
+
+            <hr>
+
+            <form>
+                <label for="login-user">Username / Email</label><br>
+                <input type="text" id="login-user" name="login-user"><br><br>
+
+                <label for="login-password">Password</label><br>
+                <input type="password" id="login-password" name="login-password"><br><br>
+
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember">Remember Me</label><br><br>
+
+                <a href="#">Forgot Password?</a><br><br>
+
+                <div class="demo-actions">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </form>
+
+            <br>
+            <hr>
+            <br>
+
+            <details>
+                <summary class="btn btn-ghost">Sign Up</summary>
+                <br>
+
+                <div class="demo-card-head">
+                    <h3>Create Account</h3>
+                    <span class="pill pill-green">New User</span>
+                </div>
+
+                <p>
+                    Fill in the form below to create your EMORA account.
+                </p>
+
+                <form>
+                    <label for="signup-name">Full Name</label><br>
+                    <input type="text" id="signup-name" name="signup-name"><br><br>
+
+                    <label for="signup-email">Email</label><br>
+                    <input type="email" id="signup-email" name="signup-email"><br><br>
+
+                    <label for="signup-password">Password</label><br>
+                    <input type="password" id="signup-password" name="signup-password"><br><br>
+
+                    <label for="signup-confirm-password">Confirm Password</label><br>
+                    <input type="password" id="signup-confirm-password" name="signup-confirm-password"><br><br>
+
+                    <div class="demo-actions">
+                        <button type="submit" class="btn btn-primary">Create Account</button>
+                    </div>
+                </form>
+            </details>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="section">
+    <h2>Contact</h2>
+    <p>
+        Need help with your account?
+        <a href="mailto:anamta.gohar25@gmail.com" class="contact-button">Contact Us</a>
+    </p>
+</section>
+
+<footer class="footer">
+    <div class="footer-content">
+        <p>&copy; 2026 EMORA. Designed for clarity, calm, and support.</p>
+        <p>Crafted with care by <strong>Anamta & Eman</strong></p>
+        <div class="footer-social">
+            <a href="mailto:anamta.gohar25@gmail.com" title="Email Us">📧</a>
+            <a href="https://github.com/anamta-JINX" target="_blank" title="GitHub">💻</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

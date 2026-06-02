@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EMORA – Emotion Recognition Assistant</title>
+  <link rel="icon" type="image/ico" href="{{ url_for('static', filename='imgs/Elogo.ico') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"DM Serif Display"', 'serif'],
+            sans:    ['"DM Sans"', 'sans-serif'],
+          },
+          colors: {
+            sage: {
+              50:  '#f4f7f4', 100: '#e4ede5', 200: '#c8dbca',
+              300: '#9dc0a0', 400: '#6d9e73', 500: '#4a7d51',
+              600: '#3a6340', 700: '#305035', 800: '#28412c', 900: '#213625',
+            },
+            stone: {
+              50:  '#fafaf9', 100: '#f5f5f3', 200: '#e8e8e4',
+              300: '#d4d4ce', 400: '#a8a89f', 500: '#7c7c72',
+              600: '#5e5e56', 700: '#464641', 800: '#2e2e2a', 900: '#1a1a17',
+            },
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    /* ── Animations ── */
+    .fade-up { opacity:0; animation: fadeUp 0.8s ease both; }
+    .delay-1 { animation-delay:0.15s; }
+    .delay-2 { animation-delay:0.3s; }
+    .delay-3 { animation-delay:0.45s; }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+ 
+    /* ── Blob / morph ── */
+    .blob { border-radius:60% 40% 30% 70% / 60% 30% 70% 40%; }
+    @keyframes morph {
+      0%,100% { border-radius:60% 40% 30% 70% / 60% 30% 70% 40%; }
+      25%      { border-radius:30% 60% 70% 40% / 50% 60% 30% 60%; }
+      50%      { border-radius:50% 60% 30% 40% / 40% 50% 60% 50%; }
+      75%      { border-radius:70% 30% 50% 50% / 60% 40% 50% 30%; }
+    }
+    @keyframes floatBlob {
+      0%,100% { transform:translateY(0) scale(1); }
+      50%      { transform:translateY(-18px) scale(1.04); }
+    }
+ 
+    /* ── Dropzone ── */
+    .dropzone.drag-active { border-color:#4a7d51; background:#f4f7f4; }
+ 
+    /* ── Camera / canvas ── */
+    #video  { width:100%; height:100%; object-fit:cover; border-radius:0.75rem; }
+    #canvas { display:none; }
+ 
+    /* ── Confidence bar ── */
+    #confidence-bar { transition:width 0.5s ease; }
+ 
+    /* ── Demo section background ── */
+    .demo-section-bg {
+      background: linear-gradient(135deg, #1a1a17 0%, #213625 35%, #1a2f38 65%, #1a1a17 100%);
+    }
+ 
+    /* ── Demo card accent borders ── */
+    .demo-card-upload  { border-top: 3px solid #6d9e73; }
+    .demo-card-webcam  { border-top: 3px solid #5b8fa8; }
+    .demo-card-result  { border-top: 3px solid #c27d3e; }
+ 
+    /* ── Glow pills ── */
+    .pill-upload  { background:rgba(109,158,115,0.15); color:#9dc0a0; border:1px solid rgba(109,158,115,0.3); }
+    .pill-webcam  { background:rgba(91,143,168,0.15);  color:#93c5d9; border:1px solid rgba(91,143,168,0.3); }
+    .pill-result  { background:rgba(194,125,62,0.15);  color:#e4a96a; border:1px solid rgba(194,125,62,0.3); }
+ 
+    /* ── Dropzone dark variant ── */
+    .dropzone-dark {
+      border:2px dashed rgba(109,158,115,0.35);
+      background:rgba(255,255,255,0.03);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .dropzone-dark:hover { border-color:#6d9e73; background:rgba(109,158,115,0.07); }
+ 
+    /* ── Camera shell dark ── */
+    .camera-shell-dark { background:rgba(255,255,255,0.04); }
+ 
+    /* ── Result value big text ── */
+    #result-text { background: linear-gradient(135deg,#9dc0a0,#e4a96a); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+ 
+    /* ── Confidence bar colourful ── */
+    #confidence-bar { background: linear-gradient(90deg,#4a7d51,#5b8fa8,#c27d3e); }
+ 
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:#9dc0a0; border-radius:3px; }
+ 
+    /* ── Btn disabled ── */
+    button:disabled { opacity:0.4; cursor:not-allowed; }
+  </style>
+ 
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+ 
+<body class="bg-stone-50 text-stone-800 font-sans antialiased overflow-x-hidden">
+ 
+<!-- ════════════════════  NAVBAR  ════════════════════ -->
+<nav class="fixed top-0 inset-x-0 z-50 bg-stone-900/95 backdrop-blur-md border-b border-stone-700/40">
+  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+ 
+    <div class="flex items-center gap-3">
+      <img src="{{ url_for('static', filename='imgs/Elogo.ico') }}" alt="EMORA" class="h-8 w-8">
+      <span class="font-display text-white text-xl tracking-wide">MORA</span>
+    </div>
+ 
+    <ul class="hidden md:flex items-center gap-1">
+      <li><a href="{{ url_for('home') }}"     class="px-4 py-2 rounded-lg text-sm font-medium text-stone-300 hover:text-white hover:bg-stone-700/60 transition-all duration-200">Home</a></li>
+      <li><a href="{{ url_for('team') }}"     class="px-4 py-2 rounded-lg text-sm font-medium text-stone-300 hover:text-white hover:bg-stone-700/60 transition-all duration-200">Team</a></li>
+      <li><a href="{{ url_for('features') }}" class="px-4 py-2 rounded-lg text-sm font-medium text-stone-300 hover:text-white hover:bg-stone-700/60 transition-all duration-200">Features</a></li>
+      <li><a href="{{ url_for('research') }}" class="px-4 py-2 rounded-lg text-sm font-medium text-stone-300 hover:text-white hover:bg-stone-700/60 transition-all duration-200">Research</a></li>
+      <li><a href="{{ url_for('faq') }}"      class="px-4 py-2 rounded-lg text-sm font-medium text-stone-300 hover:text-white hover:bg-stone-700/60 transition-all duration-200">FAQ</a></li>
+      <li><a href="{{ url_for('feedback') }}" class="px-4 py-2 rounded-lg text-sm font-medium text-stone-300 hover:text-white hover:bg-stone-700/60 transition-all duration-200">Feedback</a></li>
+      <li><a href="#contact"                  class="px-4 py-2 rounded-lg text-sm font-medium text-stone-300 hover:text-white hover:bg-stone-700/60 transition-all duration-200">Contact</a></li>
+    </ul>
+ 
+    <button class="md:hidden p-2 rounded-lg text-stone-300 hover:text-white hover:bg-stone-700/60">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+ 
+ 
+<!-- ════════════════════  HERO  ════════════════════ -->
+<header class="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-16 overflow-hidden bg-stone-900">
+ 
+  <!-- Animated blobs only — NO grid overlay -->
+  <div aria-hidden="true" class="pointer-events-none select-none absolute inset-0">
+    <span class="shape shape1 blob absolute w-72 h-72 bg-sage-600/20 -top-16 -left-20"
+          style="animation:morph 10s linear infinite, floatBlob 7s ease-in-out infinite;"></span>
+    <span class="shape shape2 blob absolute w-52 h-52 bg-sage-400/15 top-1/3 right-0 translate-x-1/2"
+          style="animation:morph 13s linear infinite reverse, floatBlob 9s ease-in-out infinite 1s;"></span>
+    <span class="shape shape3 blob absolute w-40 h-40 bg-sage-500/20 bottom-24 left-1/4"
+          style="animation:morph 8s linear infinite, floatBlob 11s ease-in-out infinite 2s;"></span>
+    <span class="shape shape4 blob absolute w-60 h-60 bg-stone-600/30 -bottom-10 right-1/3"
+          style="animation:morph 11s linear infinite reverse, floatBlob 8s ease-in-out infinite 0.5s;"></span>
+  </div>
+ 
+  <div class="relative z-10 max-w-3xl mx-auto">
+    <span class="inline-block mb-6 px-4 py-1.5 rounded-full bg-sage-600/30 border border-sage-500/40 text-sage-300 text-xs font-medium tracking-widest uppercase fade-up">
+      Real-Time Emotion Recognition
+    </span>
+ 
+    <h1 class="hero-title fade-up font-display text-5xl md:text-7xl text-white leading-tight mb-6">
+      Welcome to <span class="text-sage-400">EMORA</span>
+    </h1>
+ 
+    <p class="hero-subtitle fade-up delay-1 font-display italic text-stone-400 text-xl md:text-2xl mb-4">
+      Because <em class="text-sage-400 not-italic">reading the room</em> can be tricky.
+    </p>
+ 
+    <p class="hero-description fade-up delay-2 text-stone-400 text-base md:text-lg leading-relaxed max-w-xl mx-auto mb-10">
+      A calm, real-time tool designed to help autistic and neurodivergent individuals
+      recognize facial emotions with clarity and confidence.
+    </p>
+ 
+    <a href="#demo"
+       class="cta-button fade-up delay-3 inline-flex items-center gap-2 bg-sage-500 hover:bg-sage-400 text-white font-semibold px-8 py-4 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-sage-500/30 hover:-translate-y-0.5">
+      Try It Now
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+      </svg>
+    </a>
+  </div>
+ 
+  <!-- Scroll indicator -->
+  <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-stone-500 text-xs">
+    <span>Scroll</span>
+    <div class="w-px h-10 bg-gradient-to-b from-stone-500 to-transparent"></div>
+  </div>
+</header>
+ 
+ 
+<!-- ════════════════════  ABOUT  ════════════════════ -->
+<section id="about" class="section py-24 px-6 bg-white">
+  <div class="max-w-6xl mx-auto">
+ 
+    <div class="text-center mb-16">
+      <span class="text-sage-600 text-sm font-semibold tracking-widest uppercase">About</span>
+      <h2 class="section-title font-display text-4xl md:text-5xl text-stone-900 mt-3">
+        Making Emotions a Little<br class="hidden md:block"> Less Mysterious
+      </h2>
+    </div>
+ 
+    <div class="max-w-3xl mx-auto text-stone-600 text-lg leading-relaxed text-center mb-16">
+      <p>
+        EMORA is a real-time emotion recognition app designed to help individuals with
+        Autism Spectrum Disorder (ASD) understand facial emotions during everyday interactions.
+        Powered by computer vision and deep learning, EMORA provides instant, clear emotional insights.
+      </p>
+    </div>
+ 
+    <div class="grid md:grid-cols-2 gap-6">
+ 
+      <div class="about-card group p-8 rounded-2xl bg-stone-50 border border-stone-100 hover:border-sage-200 hover:bg-sage-50/50 transition-all duration-300">
+        <div class="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center mb-6">
+          <svg class="w-6 h-6 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-2xl text-stone-900 mb-4">Why EMORA?</h3>
+        <ul class="space-y-3 text-stone-600">
+          <li class="flex items-start gap-3">
+            <span class="mt-1 w-5 h-5 rounded-full bg-sage-100 flex-shrink-0 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>
+            </span>
+            Real-time emotion detection — no waiting, no guessing
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 w-5 h-5 rounded-full bg-sage-100 flex-shrink-0 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>
+            </span>
+            ASD-focused design — simplicity first
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 w-5 h-5 rounded-full bg-sage-100 flex-shrink-0 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>
+            </span>
+            Portable social support — fits in your pocket
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 w-5 h-5 rounded-full bg-sage-100 flex-shrink-0 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>
+            </span>
+            Confidence booster — clear guidance, no pressure
+          </li>
+        </ul>
+      </div>
+ 
+      <div class="about-card group p-8 rounded-2xl bg-stone-50 border border-stone-100 hover:border-sage-200 hover:bg-sage-50/50 transition-all duration-300">
+        <div class="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center mb-6">
+          <svg class="w-6 h-6 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-2xl text-stone-900 mb-4">Who is it for?</h3>
+        <ul class="space-y-3 text-stone-600">
+          <li class="flex items-start gap-3">
+            <span class="mt-1 w-5 h-5 rounded-full bg-sage-100 flex-shrink-0 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>
+            </span>
+            Individuals with ASD
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 w-5 h-5 rounded-full bg-sage-100 flex-shrink-0 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>
+            </span>
+            Parents and caregivers
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 w-5 h-5 rounded-full bg-sage-100 flex-shrink-0 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>
+            </span>
+            Educators and therapists
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="mt-1 w-5 h-5 rounded-full bg-sage-100 flex-shrink-0 flex items-center justify-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-sage-500"></span>
+            </span>
+            Anyone who believes empathy can be assisted by technology
+          </li>
+        </ul>
+      </div>
+    </div>
+ 
+    <p class="about-conclusion text-center text-stone-500 mt-12 text-lg italic font-display">
+      EMORA isn't here to replace human connection — it's a quiet guide, providing clarity and support.
+    </p>
+  </div>
+</section>
+ 
+ 
+<!-- ════════════════════  DEMO  ════════════════════ -->
+<section id="demo" class="demo-pro demo-section-bg py-24 px-6 relative overflow-hidden">
+ 
+  <!-- Decorative blobs behind the cards -->
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+    <span class="blob absolute w-80 h-80 opacity-20 -top-20 -right-20"
+          style="background:radial-gradient(circle,#4a7d51,transparent 70%); animation:morph 14s linear infinite, floatBlob 10s ease-in-out infinite;"></span>
+    <span class="blob absolute w-64 h-64 opacity-15 bottom-10 -left-16"
+          style="background:radial-gradient(circle,#5b8fa8,transparent 70%); animation:morph 11s linear infinite reverse, floatBlob 12s ease-in-out infinite 2s;"></span>
+    <span class="blob absolute w-48 h-48 opacity-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          style="background:radial-gradient(circle,#c27d3e,transparent 70%); animation:morph 9s linear infinite, floatBlob 8s ease-in-out infinite 1s;"></span>
+  </div>
+ 
+  <div class="relative z-10 max-w-6xl mx-auto">
+ 
+    <!-- Section header -->
+    <div class="demo-header text-center mb-14">
+      <span class="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-widest uppercase mb-4"
+            style="background:rgba(109,158,115,0.18); color:#9dc0a0; border:1px solid rgba(109,158,115,0.3);">
+        Live Demo
+      </span>
+      <h2 class="font-display text-4xl md:text-5xl text-white">Try it yourself</h2>
+      <p class="mt-4 text-stone-400 text-lg max-w-xl mx-auto">
+        Upload a photo or use your camera to analyze facial emotion in real time.
+      </p>
+    </div>
+ 
+    <!-- Top row: Upload + Webcam -->
+    <div class="demo-grid grid lg:grid-cols-2 gap-6 mb-6">
+ 
+      <!-- ── Upload card ── -->
+      <div class="demo-card demo-card-upload flex flex-col gap-5 p-6 rounded-2xl"
+           style="background:rgba(255,255,255,0.05); backdrop-filter:blur(12px); border:1px solid rgba(109,158,115,0.25);">
+ 
+        <div class="demo-card-head flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center"
+                 style="background:rgba(109,158,115,0.2);">
+              <svg class="w-5 h-5" style="color:#9dc0a0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-white text-lg">Upload Image</h3>
+          </div>
+          <span class="pill pill-upload px-3 py-1 rounded-full text-xs font-medium">Drag &amp; Drop</span>
+        </div>
+ 
+        <div id="dropzone" class="dropzone dropzone-dark flex-1 rounded-xl cursor-pointer min-h-[180px] flex items-center justify-center"
+             role="button" tabindex="0">
+          <div class="dropzone-inner text-center px-6 py-8">
+            <div class="drop-icon w-14 h-14 rounded-full mx-auto mb-4 flex items-center justify-center"
+                 style="background:rgba(109,158,115,0.15); border:1px dashed rgba(109,158,115,0.4);">
+              <svg class="w-6 h-6" style="color:#9dc0a0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+            </div>
+            <p class="drop-title font-medium text-white">Drop an image here</p>
+            <p class="drop-sub text-sm text-stone-400 mt-1">or click to browse (JPG, PNG, WEBP)</p>
+          </div>
+          <input type="file" id="image-input" accept="image/*" hidden />
+        </div>
+ 
+        <div class="file-meta flex items-center gap-3 text-sm" style="display:none;" id="file-meta">
+          <span id="file-name" class="truncate text-stone-300"></span>
+          <span id="file-size" class="flex-shrink-0 text-stone-500"></span>
+        </div>
+ 
+        <div class="demo-actions flex gap-3">
+          <button id="analyze-upload"
+                  class="btn btn-primary flex-1 font-semibold py-2.5 rounded-xl transition-all duration-200 text-white"
+                  style="background:linear-gradient(135deg,#3a6340,#4a7d51);"
+                  disabled>
+            Analyze Upload
+          </button>
+          <button id="clear-upload"
+                  class="btn btn-ghost px-4 py-2.5 rounded-xl font-medium transition-all duration-200"
+                  style="border:1px solid rgba(255,255,255,0.12); color:#a8a89f; background:transparent;"
+                  disabled>
+            Clear
+          </button>
+        </div>
+      </div>
+ 
+      <!-- ── Webcam card ── -->
+      <div class="demo-card demo-card-webcam flex flex-col gap-5 p-6 rounded-2xl"
+           style="background:rgba(255,255,255,0.05); backdrop-filter:blur(12px); border:1px solid rgba(91,143,168,0.25);">
+ 
+        <div class="demo-card-head flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center"
+                 style="background:rgba(91,143,168,0.2);">
+              <svg class="w-5 h-5" style="color:#93c5d9;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-white text-lg">Webcam</h3>
+          </div>
+          <span class="pill pill-webcam px-3 py-1 rounded-full text-xs font-medium transition-colors duration-200" id="cam-status">Off</span>
+        </div>
+ 
+        <div class="camera-shell camera-shell-dark relative flex-1 rounded-xl overflow-hidden min-h-[220px]"
+             style="border:1px solid rgba(91,143,168,0.2);">
+          <video id="video" autoplay playsinline muted class="w-full h-full object-cover rounded-xl"></video>
+          <canvas id="canvas" style="display:none;"></canvas>
+ 
+          <div class="camera-overlay absolute inset-0 flex flex-col items-center justify-center text-center" id="camera-overlay"
+               style="background:rgba(26,31,38,0.85);">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-3"
+                 style="background:rgba(91,143,168,0.15); border:1px dashed rgba(91,143,168,0.4);">
+              <svg class="w-7 h-7" style="color:#93c5d9;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.069A1 1 0 0121 8.882v6.236a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+              </svg>
+            </div>
+            <p class="overlay-title font-medium text-white">Camera preview</p>
+            <p class="overlay-sub text-sm text-stone-400 mt-1">Click "Start Camera" to begin</p>
+          </div>
+        </div>
+ 
+        <div class="demo-actions flex gap-3 flex-wrap">
+          <button id="start-webcam"
+                  class="btn btn-secondary flex-1 font-semibold py-2.5 rounded-xl transition-all duration-200 text-white"
+                  style="background:linear-gradient(135deg,#1e3a4a,#2a5a72);">
+            Start Camera
+          </button>
+          <button id="stop-webcam"
+                  class="btn btn-ghost px-4 py-2.5 rounded-xl font-medium transition-all duration-200"
+                  style="border:1px solid rgba(255,255,255,0.12); color:#a8a89f; background:transparent;"
+                  disabled>
+            Stop
+          </button>
+          <button id="capture"
+                  class="btn btn-primary flex-1 font-semibold py-2.5 rounded-xl transition-all duration-200 text-white"
+                  style="background:linear-gradient(135deg,#3a6340,#4a7d51);"
+                  disabled>
+            Capture &amp; Analyze
+          </button>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- ── Result card ── -->
+    <div class="demo-card demo-card-wide demo-card-result rounded-2xl p-6" id="result-card"
+         style="background:rgba(255,255,255,0.05); backdrop-filter:blur(12px); border:1px solid rgba(194,125,62,0.25);">
+ 
+      <div class="demo-card-head flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center"
+               style="background:rgba(194,125,62,0.2);">
+            <svg class="w-5 h-5" style="color:#e4a96a;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-white text-lg">Result</h3>
+        </div>
+        <span class="pill pill-result px-3 py-1 rounded-full text-xs font-medium" id="result-pill">Idle</span>
+      </div>
+ 
+      <div class="result-grid grid md:grid-cols-2 gap-8">
+ 
+        <div class="result-text flex flex-col gap-5">
+          <p class="result-label text-xs font-semibold tracking-widest uppercase" style="color:#e4a96a;">Detected Emotion</p>
+ 
+          <p class="result-value font-display text-4xl" id="result-text">No emotion detected yet.</p>
+ 
+          <div class="confidence" id="confidence-wrap" style="display:none;">
+            <div class="confidence-top flex justify-between text-sm font-medium mb-3" style="color:#d4d4ce;">
+              <span>Confidence</span>
+              <span id="confidence-val" style="color:#e4a96a;">0%</span>
+            </div>
+            <div class="bar w-full h-3 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.08);">
+              <div class="bar-fill h-full rounded-full" id="confidence-bar" style="width:0%;"></div>
+            </div>
+          </div>
+ 
+          <p class="hint text-sm italic" style="color:#7c7c72;" id="result-hint">
+            Tip: Use a well-lit image with a clear face for best results.
+          </p>
+        </div>
+ 
+        <div class="result-preview" id="result-preview">
+          <img id="result-image" alt="Result preview"
+               class="w-full rounded-xl object-cover max-h-56"
+               style="border:1px solid rgba(194,125,62,0.3); display:none;">
+          <div class="preview-empty h-full min-h-[160px] rounded-xl flex items-center justify-center" id="preview-empty"
+               style="border:2px dashed rgba(194,125,62,0.25); background:rgba(194,125,62,0.04);">
+            <div class="text-center">
+              <div class="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center"
+                   style="background:rgba(194,125,62,0.12);">
+                <svg class="w-5 h-5" style="color:#e4a96a;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <span class="text-sm" style="color:#5e5e56;">Preview will appear here</span>
+            </div>
+          </div>
+        </div>
+ 
+      </div>
+    </div>
+ 
+  </div>
+</section>
+ 
+ 
+<!-- ════════════════════  TECHNOLOGY  ════════════════════ -->
+<section id="technology" class="section tech-section py-24 px-6 bg-white">
+  <div class="tech-container max-w-6xl mx-auto">
+ 
+    <div class="text-center mb-16">
+      <span class="text-sage-600 text-sm font-semibold tracking-widest uppercase">Under the Hood</span>
+      <h2 class="section-title font-display text-4xl md:text-5xl text-stone-900 mt-3">How EMORA Works</h2>
+      <p class="tech-intro mt-6 text-stone-500 text-lg max-w-2xl mx-auto leading-relaxed">
+        EMORA integrates computer vision and deep learning to transform facial
+        expressions into meaningful emotional insights — accurately, efficiently, and in real time.
+      </p>
+    </div>
+ 
+    <div class="tech-grid grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+ 
+      <div class="tech-card group p-6 rounded-2xl bg-stone-50 border border-stone-100 hover:border-sage-300 hover:bg-white hover:shadow-sm transition-all duration-300">
+        <div class="w-10 h-10 rounded-lg bg-sage-100 group-hover:bg-sage-200 flex items-center justify-center mb-4 transition-colors duration-300">
+          <svg class="w-5 h-5 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+        <h3 class="font-semibold text-stone-900 mb-2">Face Detection</h3>
+        <p class="text-stone-500 text-sm leading-relaxed">Haar Cascade classifiers detect human faces from images and live video streams with high speed and low latency.</p>
+      </div>
+ 
+      <div class="tech-card group p-6 rounded-2xl bg-stone-50 border border-stone-100 hover:border-sage-300 hover:bg-white hover:shadow-sm transition-all duration-300">
+        <div class="w-10 h-10 rounded-lg bg-sage-100 group-hover:bg-sage-200 flex items-center justify-center mb-4 transition-colors duration-300">
+          <svg class="w-5 h-5 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <h3 class="font-semibold text-stone-900 mb-2">Emotion Classification</h3>
+        <p class="text-stone-500 text-sm leading-relaxed">A Convolutional Neural Network analyzes facial features and maps them to discrete emotional states.</p>
+      </div>
+ 
+      <div class="tech-card group p-6 rounded-2xl bg-stone-50 border border-stone-100 hover:border-sage-300 hover:bg-white hover:shadow-sm transition-all duration-300">
+        <div class="w-10 h-10 rounded-lg bg-sage-100 group-hover:bg-sage-200 flex items-center justify-center mb-4 transition-colors duration-300">
+          <svg class="w-5 h-5 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+        </div>
+        <h3 class="font-semibold text-stone-900 mb-2">Multi-Dataset Training</h3>
+        <p class="text-stone-500 text-sm leading-relaxed">Trained on three independent facial emotion datasets, improving robustness, diversity, and generalization.</p>
+      </div>
+ 
+      <div class="tech-card group p-6 rounded-2xl bg-stone-50 border border-stone-100 hover:border-sage-300 hover:bg-white hover:shadow-sm transition-all duration-300">
+        <div class="w-10 h-10 rounded-lg bg-sage-100 group-hover:bg-sage-200 flex items-center justify-center mb-4 transition-colors duration-300">
+          <svg class="w-5 h-5 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+        </div>
+        <h3 class="font-semibold text-stone-900 mb-2">Feedback Dataset</h3>
+        <p class="text-stone-500 text-sm leading-relaxed">A dedicated feedback dataset captures user corrections, enabling iterative refinement and real-world adaptation.</p>
+      </div>
+ 
+      <div class="tech-card group p-6 rounded-2xl bg-stone-50 border border-stone-100 hover:border-sage-300 hover:bg-white hover:shadow-sm transition-all duration-300">
+        <div class="w-10 h-10 rounded-lg bg-sage-100 group-hover:bg-sage-200 flex items-center justify-center mb-4 transition-colors duration-300">
+          <svg class="w-5 h-5 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </div>
+        <h3 class="font-semibold text-stone-900 mb-2">Training &amp; Evaluation</h3>
+        <p class="text-stone-500 text-sm leading-relaxed">Structured training, validation, and testing pipelines with augmentation and regularization prevent overfitting.</p>
+      </div>
+ 
+      <div class="tech-card group p-6 rounded-2xl bg-stone-50 border border-stone-100 hover:border-sage-300 hover:bg-white hover:shadow-sm transition-all duration-300">
+        <div class="w-10 h-10 rounded-lg bg-sage-100 group-hover:bg-sage-200 flex items-center justify-center mb-4 transition-colors duration-300">
+          <svg class="w-5 h-5 text-sage-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <h3 class="font-semibold text-stone-900 mb-2">Real-Time Inference</h3>
+        <p class="text-stone-500 text-sm leading-relaxed">Optimized inference delivers instant predictions with confidence scoring for smooth live interaction.</p>
+      </div>
+ 
+    </div>
+ 
+    <p class="tech-note text-center text-stone-400 italic mt-12 text-sm">
+      EMORA's technology is designed to remain invisible — offering clarity without cognitive overload.
+    </p>
+  </div>
+</section>
+ 
+ 
+<!-- ════════════════════  PRIVACY  ════════════════════ -->
+<section id="privacy" class="privacy-section py-24 px-6 bg-stone-900">
+  <div class="privacy-container max-w-6xl mx-auto">
+ 
+    <div class="text-center mb-16">
+      <span class="text-sage-400 text-sm font-semibold tracking-widest uppercase">Trust &amp; Ethics</span>
+      <h2 class="privacy-title font-display text-4xl md:text-5xl text-white mt-3">Privacy &amp; Ethics</h2>
+      <p class="privacy-intro mt-6 text-stone-400 text-lg max-w-2xl mx-auto leading-relaxed">
+        EMORA is designed with privacy and ethical standards in mind. User data is never shared or stored
+        beyond local analysis unless explicitly permitted.
+      </p>
+    </div>
+ 
+    <div class="privacy-grid grid md:grid-cols-3 gap-6">
+ 
+      <div class="privacy-card p-8 rounded-2xl border border-stone-700 hover:border-sage-600/60 hover:bg-stone-800/50 transition-all duration-300">
+        <div class="w-12 h-12 rounded-xl bg-sage-900/80 border border-sage-700/50 flex items-center justify-center mb-5">
+          <svg class="w-6 h-6 text-sage-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white text-lg mb-3">Data Protection</h3>
+        <p class="text-stone-400 leading-relaxed">All inputs are processed securely; personal data is not retained on servers.</p>
+      </div>
+ 
+      <div class="privacy-card p-8 rounded-2xl border border-stone-700 hover:border-sage-600/60 hover:bg-stone-800/50 transition-all duration-300">
+        <div class="w-12 h-12 rounded-xl bg-sage-900/80 border border-sage-700/50 flex items-center justify-center mb-5">
+          <svg class="w-6 h-6 text-sage-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white text-lg mb-3">User Consent</h3>
+        <p class="text-stone-400 leading-relaxed">Explicit user permission is required for any data collection or feedback usage.</p>
+      </div>
+ 
+      <div class="privacy-card p-8 rounded-2xl border border-stone-700 hover:border-sage-600/60 hover:bg-stone-800/50 transition-all duration-300">
+        <div class="w-12 h-12 rounded-xl bg-sage-900/80 border border-sage-700/50 flex items-center justify-center mb-5">
+          <svg class="w-6 h-6 text-sage-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-white text-lg mb-3">Ethical AI</h3>
+        <p class="text-stone-400 leading-relaxed">Models are trained responsibly to avoid biases and ensure accurate, fair emotion detection.</p>
+      </div>
+ 
+    </div>
+ 
+    <p class="privacy-note text-center text-stone-500 mt-12 italic font-display text-lg">
+      Your trust is our priority — EMORA respects privacy at every step.
+    </p>
+  </div>
+</section>
+ 
+ 
+<!-- ════════════════════  CONTACT  ════════════════════ -->
+<section id="contact" class="section py-24 px-6 bg-white text-center">
+  <div class="max-w-xl mx-auto">
+    <span class="text-sage-600 text-sm font-semibold tracking-widest uppercase">Get in Touch</span>
+    <h2 class="font-display text-4xl md:text-5xl text-stone-900 mt-3 mb-6">Contact</h2>
+    <p class="text-stone-500 text-lg mb-8">
+      If you'd like to collaborate, improve EMORA, or share feedback — we'd love to hear from you.
+    </p>
+    <a href="mailto:anamta.gohar25@gmail.com"
+       class="contact-button inline-flex items-center gap-2 bg-stone-900 hover:bg-sage-600 text-white font-semibold px-8 py-4 rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>
+      Contact Us
+    </a>
+  </div>
+</section>
+ 
+ 
+<!-- ════════════════════  FOOTER  ════════════════════ -->
+<footer class="footer bg-stone-900 border-t border-stone-800 py-10 px-6">
+  <div class="footer-content max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <img src="{{ url_for('static', filename='imgs/EmoralogoW.ico') }}" alt="EMORA" class="h-6 w-6 opacity-70">
+      <span class="text-stone-400 text-sm">&copy; 2026 EMORA. Designed for clarity, calm, and support.</span>
+    </div>
+    <div class="text-stone-500 text-sm">
+      Crafted with care by <strong class="text-stone-300 font-medium">Anamta &amp; Eman</strong>
+    </div>
+    <div class="footer-social flex items-center gap-4">
+      <a href="mailto:anamta.gohar25@gmail.com" title="Email Us"
+         class="w-9 h-9 rounded-full bg-stone-800 hover:bg-sage-700 flex items-center justify-center text-stone-400 hover:text-white transition-all duration-200">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+      </a>
+      <a href="https://github.com/anamta-JINX" target="_blank" title="GitHub"
+         class="w-9 h-9 rounded-full bg-stone-800 hover:bg-sage-700 flex items-center justify-center text-stone-400 hover:text-white transition-all duration-200">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</footer>
+ 
+</body>
+</html>

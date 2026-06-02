@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMORA | Team</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/ico" href="{{ url_for('static', filename='imgs/Elogo.ico') }}">
+    <style>
+        .inner-page {
+            padding: 4rem 2rem;
+            background: #FFF7E2;
+        }
+
+        .inner-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .page-intro {
+            text-align: center;
+            max-width: 760px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
+            font-size: 1.08rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .team-card {
+            background: linear-gradient(135deg, #1B211A 0%, #4F633D 100%);
+            color: #FFF7E2;
+            border-radius: 16px;
+            padding: 1.8rem;
+            box-shadow: 0 10px 24px rgba(27,33,26,0.12);
+        }
+
+        .team-card h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-card p {
+            line-height: 1.7;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-left">
+        <div class="logo-wrapper">
+            <img src="{{ url_for('static', filename='imgs/EmoralogoW.ico') }}"
+                 alt="Emora Logo"
+                 class="nav-logo">
+        </div>
+    </div>
+
+    <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">Index</a></li>
+        <li><a href="{{ url_for('home') }}">Home</a></li>
+        <li><a href="{{ url_for('team') }}">Team</a></li>
+        <li><a href="{{ url_for('features') }}">Features</a></li>
+        <li><a href="{{ url_for('research') }}">Research</a></li>
+        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+        <li><a href="{{ url_for('feedback') }}">Feedback</a></li>
+    </ul>
+</nav>
+
+<section class="inner-page">
+    <div class="inner-container">
+        <h2 class="section-title">Meet the Team</h2>
+        <p class="page-intro">
+            EMORA was built with the goal of creating a calm, supportive, and intelligent
+            tool for emotion recognition. This page introduces the people and the purpose
+            behind the project.
+        </p>
+
+        <div class="team-grid">
+            <div class="team-card">
+                <h3>Anamta</h3>
+                <p>
+                    Co-creator of EMORA, contributing to the project’s vision, design direction,
+                    and platform development with a focus on accessibility and meaningful impact.
+                </p>
+            </div>
+
+            <div class="team-card">
+                <h3>Eman</h3>
+                <p>
+                    Co-creator of EMORA, helping shape the system’s structure, user experience,
+                    and project execution from concept to implementation.
+                </p>
+            </div>
+
+            <div class="team-card">
+                <h3>Our Purpose</h3>
+                <p>
+                    EMORA exists to support neurodivergent individuals by reducing uncertainty
+                    in emotional interpretation and providing real-time clarity through technology.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="footer-content">
+        <p>&copy; 2026 EMORA. Designed for clarity, calm, and support.</p>
+        <p>Crafted with care by <strong>Anamta & Eman</strong></p>
+        <div class="footer-social">
+            <a href="mailto:anamta.gohar25@gmail.com" title="Email Us">📧</a>
+            <a href="https://github.com/anamta-JINX" target="_blank" title="GitHub">💻</a>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
