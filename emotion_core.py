@@ -13,10 +13,11 @@ from tensorflow.keras.models import load_model
 # -----------------------------
 # Config
 # -----------------------------
-BASE_MODEL_PATH = "emora_model.h5"
-FEEDBACK_MODEL_PATH = "feedback_model.keras"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-FEEDBACK_DIR = "feedback_data"
+BASE_MODEL_PATH = os.path.join(BASE_DIR, "emora_model.h5")
+FEEDBACK_MODEL_PATH = os.path.join(BASE_DIR, "feedback_model.keras")
+FEEDBACK_DIR = os.path.join(BASE_DIR, "feedback_data")
 FEEDBACK_CSV = os.path.join(FEEDBACK_DIR, "feedback.csv")
 
 FINE_TUNE_EPOCHS = 5
