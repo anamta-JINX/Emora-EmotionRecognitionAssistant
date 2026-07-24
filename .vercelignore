@@ -1,0 +1,21 @@
+Facial Expressions/
+evaluation_outputs/
+preprocessed/
+feedback_data/
+
+datasets.zip
+templates.rar
+Emora Documentation.pdf
+
+__pycache__/
+*.pyc
+
+train_model.py
+manualtrain.py
+preprocess_datasets.py
+evaluate_emora.py
+emora_gui.py
+app_modified_image.py
+
+feedback_model.h5
+feedback_model.tmp.h5
