@@ -1,8 +1,27 @@
+# Python cache / compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# =========================
-# Generated outputs (ignored)
-# =========================
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
 
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.*
+config.local.*
+
+# Generated outputs
 outputs/
 results/
 runs/
@@ -10,51 +29,47 @@ logs/
 wandb/
 mlruns/
 checkpoints/
+backend/data/evaluation_outputs/*
+!backend/data/evaluation_outputs/.gitkeep
+backend/data/feedback_data/*
+!backend/data/feedback_data/.gitkeep
 
-# =========================
-# Python cache
-# =========================
-__pycache__/
-*.py[cod]
-*$py.class
+# Raw local datasets and archives
+backend/data/datasets/*
+!backend/data/datasets/.gitkeep
+!backend/data/datasets/README.md
+backend/data/archives/*
+!backend/data/archives/.gitkeep
 
-# =========================
-# Virtual environments
-# =========================
-.venv/
-venv/
-env/
-ENV/
+# Temporary model saves
+*.tmp.h5
+*.tmp.keras
 
-# =========================
-# Notebooks
-# =========================
-.ipynb_checkpoints/
-
-# =========================
-# OS / editor
-# =========================
+# Editor / OS
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
 desktop.ini
-.vscode/
-.idea/
 *.swp
 
-# =========================
-# Secrets (ignored)
-# =========================
-.env
-.env.*
-*.pem
-*.key
-secrets.*
-config.local.*
-
-# =========================
-# Archives (optional: ignore)
-# =========================
-*.zip
+# Local archives
 *.7z
 *.tar
 *.tar.gz
+
+# React / Node
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local ML models and generated data
+backend/models/*.h5
+backend/models/*.keras
+backend/models/*.caffemodel
+backend/data/datasets/Facial Expressions/
+backend/data/feedback_data/*/
+.vercel/
+*.pyc

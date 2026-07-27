@@ -1,0 +1,38 @@
+import { ArrowUpRight, Github, Heart, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import Logo from './Logo.js';
+export default function Footer() {
+    return (React.createElement("footer", { className: "relative overflow-hidden bg-ink text-white" },
+        React.createElement("div", { className: "absolute inset-0 opacity-[0.06] hero-grid" }),
+        React.createElement("div", { className: "container-page relative py-14 sm:py-16" },
+            React.createElement("div", { className: "grid gap-12 border-b border-white/10 pb-12 lg:grid-cols-[1.2fr_.8fr_.8fr]" },
+                React.createElement("div", { className: "max-w-md" },
+                    React.createElement(Logo, { light: true }),
+                    React.createElement("p", { className: "mt-5 text-sm leading-7 text-slate-300" }, "A calm emotion-recognition assistant designed to support clarity, confidence, and more accessible social understanding."),
+                    React.createElement("div", { className: "mt-6 flex gap-3" },
+                        React.createElement("a", { href: "mailto:anamta.gohar25@gmail.com", className: "grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-1 hover:bg-white/10 hover:text-white", "aria-label": "Email EMORA" },
+                            React.createElement(Mail, { size: 18 })),
+                        React.createElement("a", { href: "https://github.com/anamta-JINX", target: "_blank", rel: "noreferrer", className: "grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition hover:-translate-y-1 hover:bg-white/10 hover:text-white", "aria-label": "GitHub" },
+                            React.createElement(Github, { size: 18 })))),
+                React.createElement("div", null,
+                    React.createElement("p", { className: "text-xs font-bold uppercase tracking-[0.18em] text-moss-300" }, "Explore"),
+                    React.createElement("div", { className: "mt-5 grid gap-3 text-sm text-slate-300" },
+                        React.createElement(Link, { to: "/features", className: "transition hover:text-white" }, "Features"),
+                        React.createElement(Link, { to: "/research", className: "transition hover:text-white" }, "Research"),
+                        React.createElement(Link, { to: "/team", className: "transition hover:text-white" }, "Meet the team"),
+                        React.createElement(Link, { to: "/faq", className: "transition hover:text-white" }, "FAQ"))),
+                React.createElement("div", null,
+                    React.createElement("p", { className: "text-xs font-bold uppercase tracking-[0.18em] text-moss-300" }, "Get involved"),
+                    React.createElement("div", { className: "mt-5 grid gap-3 text-sm text-slate-300" },
+                        React.createElement(Link, { to: "/feedback", className: "flex items-center gap-2 transition hover:text-white" },
+                            "Share feedback ",
+                            React.createElement(ArrowUpRight, { size: 14 })),
+                        React.createElement(Link, { to: "/profile", className: "transition hover:text-white" }, "Accessibility profile"),
+                        React.createElement("a", { href: "mailto:anamta.gohar25@gmail.com", className: "transition hover:text-white" }, "Contact the creators")))),
+            React.createElement("div", { className: "flex flex-col gap-3 pt-7 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between" },
+                React.createElement("p", null, "\u00A9 2026 EMORA. Built by Anamta & Eman."),
+                React.createElement("p", { className: "flex items-center gap-1.5" },
+                    "Designed with ",
+                    React.createElement(Heart, { size: 13, className: "text-peach-300", fill: "currentColor" }),
+                    " for clarity, calm, and support.")))));
+}

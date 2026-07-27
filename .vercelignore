@@ -1,21 +1,20 @@
-Facial Expressions/
-evaluation_outputs/
-preprocessed/
-feedback_data/
+# Training data and generated outputs
+backend/data/datasets/
+backend/data/preprocessed/
+backend/data/feedback_data/
+backend/data/evaluation_outputs/
+backend/data/archives/
 
-datasets.zip
-templates.rar
-Emora Documentation.pdf
+# Local/desktop utilities are not needed by the Flask web runtime
+backend/scripts/
+backend/resources/face_detector/*.caffemodel
+
+docs/
+archive/
+tests/
 
 __pycache__/
 *.pyc
-
-train_model.py
-manualtrain.py
-preprocess_datasets.py
-evaluate_emora.py
-emora_gui.py
-app_modified_image.py
-
-feedback_model.h5
-feedback_model.tmp.h5
+*.pyo
+*.tmp.h5
+*.tmp.keras
