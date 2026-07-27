@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a17">
+  <meta name="description" content="EMORA is a calm emotion recognition assistant for image and webcam analysis.">
+  <link rel="icon" href="/app/imgs/Elogo.ico">
+  <link rel="stylesheet" href="/app/assets/app.css">
+  <title>EMORA — Emotion Recognition Assistant</title>
+  <script src="/app/assets/vendor/react.production.min.js"></script>
+  <script src="/app/assets/vendor/react-dom.production.min.js"></script>
+  <script src="/app/assets/vendor/hooks-polyfill.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "/app/assets/vendor/react-shim.js",
+        "react-dom/client": "/app/assets/vendor/react-dom-client-shim.js",
+        "react-router-dom": "/app/assets/vendor/router.js",
+        "lucide-react": "/app/assets/vendor/icons.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/app/assets/app/main.js"></script>
+</body>
+</html>

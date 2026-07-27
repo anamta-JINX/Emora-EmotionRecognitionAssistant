@@ -1,0 +1,20 @@
+# Training data and generated outputs
+backend/data/datasets/
+backend/data/preprocessed/
+backend/data/feedback_data/
+backend/data/evaluation_outputs/
+backend/data/archives/
+
+# Local/desktop utilities are not needed by the Flask web runtime
+backend/scripts/
+backend/resources/face_detector/*.caffemodel
+
+docs/
+archive/
+tests/
+
+__pycache__/
+*.pyc
+*.pyo
+*.tmp.h5
+*.tmp.keras
