@@ -1,4 +1,3 @@
-import { ScanFace } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Logo({ light = false }) {
@@ -9,16 +8,14 @@ export default function Logo({ light = false }) {
       aria-label="EMORA home"
     >
       <span
-        className={`grid h-10 w-10 place-items-center rounded-2xl border shadow-sm transition duration-300 group-hover:-rotate-3 group-hover:scale-105 ${
-          light
-            ? 'border-white/20 bg-ink/30 text-white backdrop-blur-sm'
-            : 'border-moss-100 bg-white text-moss-700'
+        className={`grid h-10 w-10 place-items-center overflow-hidden rounded-2xl border bg-white shadow-sm transition duration-300 group-hover:-rotate-3 group-hover:scale-105 ${
+          light ? 'border-white/20' : 'border-moss-100'
         }`}
       >
-        <ScanFace
-          size={24}
-          strokeWidth={2.1}
-          aria-hidden="true"
+        <img
+          src="/app/imgs/Elogo.ico"
+          alt="EMORA logo"
+          className="h-8 w-8 object-contain"
         />
       </span>
 
