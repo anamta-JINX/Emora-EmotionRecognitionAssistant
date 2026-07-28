@@ -4,7 +4,7 @@ export default function Logo({ light = false }) {
   return (
     <Link to="/" className="group flex items-center gap-3" aria-label="EMORA home">
       <span className={`grid h-10 w-10 place-items-center overflow-hidden rounded-2xl border shadow-sm transition duration-300 group-hover:-rotate-3 group-hover:scale-105 ${light ? 'border-white/15 bg-white/10' : 'border-moss-100 bg-white'}`}>
-        <img src="/app/imgs/Elogo.png" alt="" className="h-8 w-8 object-contain" />
+        <img src="/app/imgs/Elogo.ico" alt="" className="h-8 w-8 object-contain" />
       </span>
       <span className="leading-none">
         <span className={`block font-display text-lg font-extrabold tracking-[-0.04em] ${light ? 'text-white' : 'text-ink'}`}>EMORA</span>
