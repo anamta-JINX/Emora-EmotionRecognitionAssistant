@@ -1,0 +1,12 @@
+EMORA verified real-face demo captures
+
+Happy    -> Happy       95.0%
+Sad      -> Sad         83.8%
+Angry    -> Angry       65.0%
+Surprise -> Surprise    66.9%
+Fear     -> Fear        99.4%
+Disgust  -> Disgust     43.0%
+
+Only correctly classified examples were retained.
+The scores are winning softmax outputs, not calibrated emotional certainty.
+See ../../PHOTO-NOTES.md for media-rights guidance.
